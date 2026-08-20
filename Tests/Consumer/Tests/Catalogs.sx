@@ -1,0 +1,12 @@
+use GFX.Animation
+use GFX.Plugins
+
+test "consume GFX.Animation through public package boundaries" {
+    let timeline = Animation.sequence([
+        Animation.wait(0.25),
+        Animation.wait(0.75),
+    ])
+    let plugin = Plugins.Animation()
+    assert(timeline.duration() == 1.0)
+    assert(plugin.id() == "GFX.Animation.Plugin")
+}
