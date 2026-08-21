@@ -138,8 +138,10 @@ func create_help(world:&Resources.World) {
         )
     })
     world.spawn(ECS.EntityRecipe()
-        ..with(Components.Overlay2D(help, 540, 58)
-            ..position = Math.Vec2(18.0)
+        ..with(Components.Transform2D(position:Math.Vec2(18.0)))
+        ..with(Components.Canvas(help, 540, 58)
+            ..space = Components.CanvasSpace.viewport
+            ..pivot = Math.Vec2()
             ..layer = 10
         )
     )
@@ -147,16 +149,16 @@ func create_help(world:&Resources.World) {
 
 func main() {
     Application()
-        ..add_plugin(Plugins.Window(Plugins.WindowSettings()
+        ..add_plugin(Plugins.Window(Plugins.Window.Settings()
             ..title = "GFX.Animation — Easing gallery"
             ..width = 1024
             ..height = 720
         ))
-        ..add_plugin(Plugins.Rendering(Plugins.RenderingSettings()
+        ..add_plugin(Plugins.Rendering(Plugins.Rendering.Settings()
             ..clear = Color.slate_950()
         ))
         ..add_plugin(Plugins.ViewportCamera2D(
-            Plugins.ViewportCamera2DSettings()
+            Plugins.ViewportCamera2D.Settings()
                 ..position = Math.Vec2(0.0, Const.row_spacing)
                 ..controls = Plugins.ViewportCamera2DControls(
                     pan:Input.MouseButton.left

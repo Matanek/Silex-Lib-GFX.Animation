@@ -85,16 +85,15 @@ func create_square(world:&Resources.World) {
 
 func main() {
     Application()
-        ..add_plugin(Plugins.Window(Plugins.WindowSettings()
+        ..add_plugin(Plugins.Window(Plugins.Window.Settings()
             ..title = "GFX.Animation — Timeline 2D"
             ..width = 960
             ..height = 640
         ))
-        ..add_plugin(Plugins.Rendering(Plugins.RenderingSettings()
+        ..add_plugin(Plugins.Rendering(Plugins.Rendering.Settings()
             ..clear = Color.slate_950()
         ))
         ..add_plugin(Plugins.Scene2D())
-        ..add_plugin(Plugins.FPSCounter())
         ..add_plugin(Animation.Plugin())
         ..add_system(Application.Schedule.startup, create_square)
         ..add_system(Application.Schedule.startup, create_points)

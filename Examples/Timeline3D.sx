@@ -168,13 +168,13 @@ func create_moving_light(world:&Resources.World) {
 
 func main() {
     Application()
-        ..add_plugin(Plugins.Window(Plugins.WindowSettings()
+        ..add_plugin(Plugins.Window(Plugins.Window.Settings()
             ..title = "GFX.Animation — Timeline 3D"
             ..width = 1280
             ..height = 720
         ))
         ..add_plugin(Plugins.Time())
-        ..add_plugin(Plugins.ViewportCamera3D(Plugins.ViewportCamera3DSettings()
+        ..add_plugin(Plugins.ViewportCamera3D(Plugins.ViewportCamera3D.Settings()
             ..target = Math.Vec3(0.0, 0.55, 0.0)
             ..distance = 5.0
             ..min_distance = 2.0
