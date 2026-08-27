@@ -27,7 +27,11 @@ world.spawn(ECS.EntityRecipe()
 ```
 
 The package owns its timeline vocabulary, easing functions, playback component,
-application plugin, tests and examples. The plugin integrates public GFX
+application plugin and focused tests. The visual
+[easing](https://github.com/Matanek/Silex-Examples/blob/main/Sources/EasingGallery.sx),
+[2D timeline](https://github.com/Matanek/Silex-Examples/blob/main/Sources/Timeline2D.sx),
+and [3D timeline](https://github.com/Matanek/Silex-Examples/blob/main/Sources/Timeline3D.sx)
+demonstrations live in `Silex-Examples`. The plugin integrates public GFX
 Application, ECS, Scene2D, Canvas and Scene3D capabilities without privileged
 access.
 
