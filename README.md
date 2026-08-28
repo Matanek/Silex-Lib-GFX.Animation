@@ -1,42 +1,15 @@
 # GFX.Animation
 
-GFX.Animation composes reusable timelines for 2D and 3D position, rotation,
-scale and color. A timeline can be sequenced, run in parallel, looped or played
-back and forth, then attached to an ECS entity through its `Playback` component.
+`GFX.Animation` composes reusable 2D and 3D timelines and plays them on ECS
+entities through GFX applications.
 
 ```text
 silex install GFX.Animation
 ```
 
-```sx
-use GFX.Animation
-use GFX.Components
-use GFX.ECS
-use STD.Math
+## Documentation
 
-let route = Animation.sequence([
-    Animation.move_to(Math.Vec2(10.0, 0.0), 1.0),
-    Animation.wait(0.25),
-    Animation.move_to(Math.Vec2(), 1.0),
-])..loop()
+- [Documentation française](Docs/FR/README.md)
+- [English documentation](Docs/EN/README.md)
 
-world.spawn(ECS.EntityRecipe()
-    ..with(Components.Transform2D())
-    ..with(route.play())
-)
-```
-
-The package owns its timeline vocabulary, easing functions, playback component,
-application plugin and focused tests. The visual
-[easing](https://github.com/Matanek/Silex-Examples/blob/main/Sources/EasingGallery.sx),
-[2D timeline](https://github.com/Matanek/Silex-Examples/blob/main/Sources/Timeline2D.sx),
-and [3D timeline](https://github.com/Matanek/Silex-Examples/blob/main/Sources/Timeline3D.sx)
-demonstrations live in `Silex-Examples`. The plugin integrates public GFX
-Application, ECS, Scene2D, Canvas and Scene3D capabilities without privileged
-access.
-
-GFX.Animation contributes `Plugins.Animation` to the `GFX.Plugins` catalog.
-`Tests/Consumer` verifies the public package and catalog boundary from an
-anonymous application workspace.
-
-See [Docs/README.md](Docs/README.md) for composition and playback semantics.
+The package requires Silex 0.39.0 or newer.
