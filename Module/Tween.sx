@@ -1,0 +1,194 @@
+use GFX.Animation.Easing.Easing
+use GFX.Animation.Easing.sample as sample_easing
+use STD.Math
+
+struct TweenStep<T> {
+    let start:float
+    let duration:float
+    let source:T
+    let target:T
+    let easing:Easing
+}
+
+public struct Tween<T> {
+    private let initial:T
+    private let interpolate:func(T, T, float) T
+    private var steps:TweenStep<T>[]
+    private var total_duration:float
+    private var elapsed:float
+    private var cursor:int
+    private var current:T
+    private var ping_ponging:bool
+    private var looping:bool
+    private var completed:bool
+
+    init(initial:T, interpolate:func(T, T, float) T) {
+        self.initial = initial
+        self.interpolate = interpolate
+        self.steps = []
+        self.total_duration = 0.0
+        self.elapsed = 0.0
+        self.cursor = 0
+        self.current = initial
+        self.ping_ponging = false
+        self.looping = false
+        self.completed = true
+    }
+
+    func to(
+        value:T,
+        duration:float,
+        easing:Easing = Easing.linear
+    ) {
+        require_positive_tween_duration(duration, "to")
+        let source = self.last_value()
+        self.steps.append(TweenStep<T>(
+            start:self.total_duration,
+            duration:duration,
+            source:source,
+            target:value,
+            easing:easing
+        ))
+        self.total_duration += duration
+        self.completed = false
+    }
+
+    func wait(duration:float) {
+        require_positive_tween_duration(duration, "wait")
+        let value = self.last_value()
+        self.steps.append(TweenStep<T>(
+            start:self.total_duration,
+            duration:duration,
+            source:value,
+            target:value,
+            easing:Easing.constant
+        ))
+        self.total_duration += duration
+        self.completed = false
+    }
+
+    func duration() float { return self.total_duration }
+
+    func value() T { return self.current }
+
+    func finished() bool { return self.completed }
+
+    func loop() {
+        self.require_steps("loop")
+        self.looping = true
+        self.completed = false
+    }
+
+    func ping_pong() {
+        self.require_steps("ping_pong")
+        self.ping_ponging = true
+        self.completed = false
+    }
+
+    func restart() {
+        self.elapsed = 0.0
+        self.cursor = 0
+        self.current = self.initial
+        self.completed = self.steps.is_empty()
+    }
+
+    func seek(time:float) T {
+        if time < 0.0 {
+            panic("GFX.Animation.Tween.seek requires a non-negative time")
+        }
+        self.set_elapsed(time)
+        return self.current
+    }
+
+    func advance(delta:float) T {
+        if delta < 0.0 {
+            panic("GFX.Animation.Tween.advance requires a non-negative delta")
+        }
+        if self.steps.is_empty() { return self.current }
+        self.set_elapsed(self.elapsed + delta)
+        return self.current
+    }
+
+    private func last_value() T {
+        if self.steps.is_empty() { return self.initial }
+        return self.steps[self.steps.count() - 1].target
+    }
+
+    private func require_steps(operation:str) {
+        if self.steps.is_empty() {
+            panic("GFX.Animation.Tween.$(operation) requires a positive duration")
+        }
+    }
+
+    private func cycle_duration() float {
+        if self.ping_ponging { return self.total_duration * 2.0 }
+        return self.total_duration
+    }
+
+    private func set_elapsed(time:float) {
+        if self.steps.is_empty() {
+            self.elapsed = 0.0
+            self.current = self.initial
+            self.completed = true
+            return
+        }
+
+        let cycle = self.cycle_duration()
+        if self.looping {
+            self.elapsed = Math.modulo(time, cycle)
+            self.completed = false
+        } else {
+            self.elapsed = time
+            if self.elapsed >= cycle {
+                self.elapsed = cycle
+                self.completed = true
+            } else {
+                self.completed = false
+            }
+        }
+        self.sample_current()
+    }
+
+    private func sample_current() {
+        var local_time = self.elapsed
+        var reversing = false
+        if self.ping_ponging && local_time > self.total_duration {
+            local_time = self.total_duration * 2.0 - local_time
+            reversing = true
+        }
+
+        if local_time <= 0.0 {
+            self.cursor = 0
+            self.current = self.initial
+            return
+        }
+        if local_time >= self.total_duration {
+            self.cursor = self.steps.count() - 1
+            self.current = self.steps[self.cursor].target
+            return
+        }
+
+        while self.cursor > 0 && local_time < self.steps[self.cursor].start {
+            self.cursor--
+        }
+        while self.cursor + 1 < self.steps.count() &&
+            local_time > self.steps[self.cursor].start + self.steps[self.cursor].duration
+        {
+            self.cursor++
+        }
+
+        let step = self.steps[self.cursor]
+        let amount = (local_time - step.start) / step.duration
+        self.current = self.interpolate(
+            step.source,
+            step.target,
+            sample_easing(step.easing, amount, reversing)
+        )
+    }
+}
+
+func require_positive_tween_duration(duration:float, operation:str) {
+    if duration <= 0.0 {
+        panic("GFX.Animation.Tween.$(operation) requires a positive duration")
+    }
+}

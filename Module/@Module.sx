@@ -5,6 +5,97 @@ public use GFX.Animation.Easing.Easing
 public use GFX.Animation.Playback.Playback
 public use GFX.Animation.Plugin.Plugin
 public use GFX.Animation.Timeline.Timeline
+public use GFX.Animation.Tween.Tween
+
+public func tween(initial:float) Tween<float> {
+    return Tween<float>(initial, interpolate_float)
+}
+
+public func tween(
+    initial:float,
+    target:float,
+    duration:float,
+    easing:Easing = Easing.linear
+) Tween<float> {
+    var result = tween(initial)
+    result.to(target, duration, easing)
+    return result
+}
+
+public func tween(initial:Math.Vec2) Tween<Math.Vec2> {
+    return Tween<Math.Vec2>(initial, interpolate_vec2)
+}
+
+public func tween(
+    initial:Math.Vec2,
+    target:Math.Vec2,
+    duration:float,
+    easing:Easing = Easing.linear
+) Tween<Math.Vec2> {
+    var result = tween(initial)
+    result.to(target, duration, easing)
+    return result
+}
+
+public func tween(initial:Math.Vec3) Tween<Math.Vec3> {
+    return Tween<Math.Vec3>(initial, interpolate_vec3)
+}
+
+public func tween(
+    initial:Math.Vec3,
+    target:Math.Vec3,
+    duration:float,
+    easing:Easing = Easing.linear
+) Tween<Math.Vec3> {
+    var result = tween(initial)
+    result.to(target, duration, easing)
+    return result
+}
+
+public func tween(initial:Math.Vec4) Tween<Math.Vec4> {
+    return Tween<Math.Vec4>(initial, interpolate_vec4)
+}
+
+public func tween(
+    initial:Math.Vec4,
+    target:Math.Vec4,
+    duration:float,
+    easing:Easing = Easing.linear
+) Tween<Math.Vec4> {
+    var result = tween(initial)
+    result.to(target, duration, easing)
+    return result
+}
+
+public func tween(initial:Color) Tween<Color> {
+    return Tween<Color>(initial, interpolate_color)
+}
+
+public func tween(
+    initial:Color,
+    target:Color,
+    duration:float,
+    easing:Easing = Easing.linear
+) Tween<Color> {
+    var result = tween(initial)
+    result.to(target, duration, easing)
+    return result
+}
+
+public func tween(initial:Math.Quat) Tween<Math.Quat> {
+    return Tween<Math.Quat>(initial.normalized(), interpolate_quaternion)
+}
+
+public func tween(
+    initial:Math.Quat,
+    target:Math.Quat,
+    duration:float,
+    easing:Easing = Easing.linear
+) Tween<Math.Quat> {
+    var result = tween(initial)
+    result.to(target.normalized(), duration, easing)
+    return result
+}
 
 public func wait(duration:float) Timeline {
     return Timeline.wait(duration)
@@ -80,6 +171,36 @@ public func sequence(children:Timeline[]) Timeline {
 
 public func parallel(children:Timeline[]) Timeline {
     return Timeline.parallel(children)
+}
+
+func interpolate_float(start:float, end:float, amount:float) float {
+    return Math.lerp(start, end, amount)
+}
+
+func interpolate_vec2(start:Math.Vec2, end:Math.Vec2, amount:float) Math.Vec2 {
+    return start.lerp(end, amount)
+}
+
+func interpolate_vec3(start:Math.Vec3, end:Math.Vec3, amount:float) Math.Vec3 {
+    return start.lerp(end, amount)
+}
+
+func interpolate_vec4(start:Math.Vec4, end:Math.Vec4, amount:float) Math.Vec4 {
+    return start.lerp(end, amount)
+}
+
+func interpolate_color(start:Color, end:Color, amount:float) Color {
+    return start.lerp(end, amount)
+}
+
+func interpolate_quaternion(start:Math.Quat, end:Math.Quat, amount:float) Math.Quat {
+    var destination = end
+    if start.dot(destination) < 0.0 {
+        destination = destination.multiply(-1.0)
+    }
+    return start.multiply(1.0 - amount)
+        .add(destination.multiply(amount))
+        .normalized()
 }
 
 contribute GFX.Plugins {

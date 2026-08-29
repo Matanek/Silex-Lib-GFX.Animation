@@ -41,6 +41,18 @@ struct Integration3DState {
     }
 }
 
+struct AnimatedValue {
+    let amount:float
+}
+
+func interpolate_animated_value(
+    start:AnimatedValue,
+    end:AnimatedValue,
+    amount:float
+) AnimatedValue {
+    return AnimatedValue(amount:Math.lerp(start.amount, end.amount, amount))
+}
+
 func create_animated_entity(
     world:&Resources.World,
     state:&IntegrationState
@@ -190,6 +202,94 @@ test "compose timeline actions through GFX.Animation" {
     assert(Math.nearly_equal(scale_pulse.duration(), 1.0))
     assert(Math.nearly_equal(route.duration(), 5.0))
     assert(Math.nearly_equal(timeline.duration(), 5.0))
+}
+
+test "advance a simple value tween manually" {
+    var tween:Animation.Tween<float> = Animation.tween(
+        0.0,
+        10.0,
+        2.0,
+        easing:Animation.Easing.linear
+    )
+
+    assert(tween.value() == 0.0)
+    assert(tween.advance(0.5) == 2.5)
+    assert(!tween.finished())
+    assert(tween.advance(1.5) == 10.0)
+    assert(tween.finished())
+    assert(tween.advance(1.0) == 10.0)
+
+    tween.restart()
+    assert(tween.value() == 0.0)
+    assert(!tween.finished())
+}
+
+test "keep one tween type across several value animation steps" {
+    var tween:Animation.Tween<Math.Vec2> = Animation.tween(Math.Vec2())
+        ..to(Math.Vec2(10.0, 0.0), 1.0)
+        ..wait(0.5)
+        ..to(Math.Vec2(10.0, 10.0), 1.0,
+            easing:Animation.Easing.in_out)
+
+    assert(tween.duration() == 2.5)
+    assert(tween.advance(1.0) == Math.Vec2(10.0, 0.0))
+    assert(tween.advance(0.25) == Math.Vec2(10.0, 0.0))
+    assert(tween.advance(0.5).y > 0.0)
+    assert(tween.advance(0.75) == Math.Vec2(10.0, 10.0))
+    assert(tween.finished())
+}
+
+test "loop a tween in both directions" {
+    var tween = Animation.tween(0.0, 10.0, 1.0)
+        ..ping_pong()
+        ..loop()
+
+    assert(tween.advance(0.5) == 5.0)
+    assert(tween.advance(0.5) == 10.0)
+    assert(tween.advance(0.5) == 5.0)
+    assert(tween.advance(0.5) == 0.0)
+    assert(!tween.finished())
+}
+
+test "seek backward through a composed ping-pong tween" {
+    var tween = Animation.tween(0.0)
+        ..to(10.0, 1.0)
+        ..wait(0.5)
+        ..to(20.0, 1.0)
+        ..ping_pong()
+
+    assert(tween.seek(3.0) == 15.0)
+    assert(tween.seek(4.0) == 10.0)
+    assert(tween.seek(5.0) == 0.0)
+    assert(tween.finished())
+}
+
+test "animate built-in graphical value types" {
+    var position = Animation.tween(Math.Vec3(), Math.Vec3(2.0), 1.0)
+    var vector = Animation.tween(Math.Vec4(), Math.Vec4(2.0), 1.0)
+    var color = Animation.tween(Color.black(), Color.white(), 1.0)
+    var rotation = Animation.tween(
+        Math.Quat.identity(),
+        Math.Quat.angle_axis(Math.pi(), Math.Vec3.up()),
+        1.0
+    )
+
+    assert(position.advance(0.5) == Math.Vec3(1.0))
+    assert(vector.advance(0.5) == Math.Vec4(1.0))
+    assert(color.advance(0.5) == Color.rgba(0.5, 0.5, 0.5, 1.0))
+    assert(Math.nearly_equal(rotation.advance(0.5).length(), 1.0))
+}
+
+test "seek a tween and animate a custom value" {
+    var tween = Animation.Tween<AnimatedValue>(
+        AnimatedValue(amount:2.0),
+        interpolate_animated_value
+    )
+        ..to(AnimatedValue(amount:6.0), 2.0)
+
+    assert(tween.seek(1.0).amount == 4.0)
+    assert(tween.seek(2.0).amount == 6.0)
+    assert(tween.finished())
 }
 
 test "compose and apply 3D transform animations through GFX.Animation" {

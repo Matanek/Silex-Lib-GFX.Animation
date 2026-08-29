@@ -1,9 +1,8 @@
-# Composer des timelines avec GFX.Animation
+# Animer des valeurs et composer des timelines avec GFX.Animation
 
-`GFX.Animation` décrit des changements de position, rotation, échelle et
-couleur au fil du temps sans exposer de runner d’animation ni de renderer. Une
-timeline peut être séquencée, exécutée en parallèle, bouclée ou jouée en
-aller-retour, puis attachée à une entité ECS avec son composant `Playback`.
+`GFX.Animation` fait évoluer une valeur dans une boucle de mise à jour avec
+`Tween<T>`. Il compose aussi des changements de position, rotation, échelle et
+couleur dans des timelines attachées aux entités ECS avec `Playback`.
 
 [Read this documentation in English.](../EN/README.md)
 
@@ -13,7 +12,60 @@ aller-retour, puis attachée à une entité ECS avec son composant `Playback`.
 silex install GFX.Animation
 ```
 
-GFX.Animation demande Silex 0.39.0 ou une version plus récente.
+GFX.Animation demande Silex 0.43.0 ou une version plus récente.
+
+## Animer une valeur dans une mise à jour
+
+Un `Tween<T>` conserve sa valeur courante et son avancement. Construisez ses
+étapes une seule fois, ajoutez-le aux ressources de l’application, puis appelez
+`advance` avec le delta de la frame. Le fragment suivant montre la ressource et
+son système `update` :
+
+```sx
+use GFX.Animation
+use GFX.Application
+use GFX.Resources
+
+func update_drawing(
+    time:@Resources.FrameTime,
+    pulse:&Animation.Tween<float>
+) {
+    let amount = pulse.advance(time.delta)
+    // Redessiner ici à partir de `amount`.
+}
+
+Application()
+    ..add_resource(Animation.tween(0.0, 1.0, 0.6,
+        easing:Animation.Easing.sine_in_out)
+        ..ping_pong()
+        ..loop()
+    )
+    ..add_system(Application.Schedule.update, update_drawing)
+```
+
+`advance` ne reconstruit pas le tween et n’accède à aucune entité ECS. Il
+réutilise la valeur courante et un curseur sur les étapes configurées.
+
+Le même type couvre une animation composée. `to` ajoute une interpolation et
+`wait` maintient la dernière valeur :
+
+```sx
+var opacity:Animation.Tween<float> = Animation.tween(0.0)
+    ..to(1.0, 0.4, easing:Animation.Easing.out)
+    ..wait(0.2)
+    ..to(0.25, 0.6, easing:Animation.Easing.in_out)
+```
+
+`value` lit la valeur courante sans avancer. `seek` positionne le tween,
+`restart` le ramène au début et `finished` indique qu’un tween non bouclé a
+atteint sa fin. `ping_pong` joue les étapes dans les deux directions et `loop`
+répète le cycle.
+
+Le type `float`, les vecteurs 2D et 3D, les vecteurs 4D, les couleurs et les
+quaternions possèdent une interpolation intégrée. Pour un autre type `T`, construisez
+`Animation.Tween<T>(initial, interpolate)` avec une fonction
+`func(T, T, float) T` ; `Tween<T>` reste ainsi indépendant d’un système de
+réflexion sur les propriétés.
 
 ## Construire une timeline
 

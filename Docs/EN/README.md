@@ -1,9 +1,8 @@
-# Compose timelines with GFX.Animation
+# Animate values and compose timelines with GFX.Animation
 
-`GFX.Animation` describes position, rotation, scale, and color changes over
-time without exposing an animation runner or renderer. A timeline can be
-sequenced, run in parallel, looped, or played back and forth, then attached to
-an ECS entity through its `Playback` component.
+`GFX.Animation` evolves a value in an update loop with `Tween<T>`. It also
+composes position, rotation, scale, and color changes into timelines attached
+to ECS entities through `Playback`.
 
 [Lire cette documentation en français.](../FR/README.md)
 
@@ -13,7 +12,58 @@ an ECS entity through its `Playback` component.
 silex install GFX.Animation
 ```
 
-GFX.Animation requires Silex 0.39.0 or newer.
+GFX.Animation requires Silex 0.43.0 or newer.
+
+## Animate a value in an update loop
+
+A `Tween<T>` retains its current value and playback progress. Build its steps
+once, add it to the application resources, then call `advance` with the frame
+delta. The following fragment shows the resource and its `update` system:
+
+```sx
+use GFX.Animation
+use GFX.Application
+use GFX.Resources
+
+func update_drawing(
+    time:@Resources.FrameTime,
+    pulse:&Animation.Tween<float>
+) {
+    let amount = pulse.advance(time.delta)
+    // Redraw here from `amount`.
+}
+
+Application()
+    ..add_resource(Animation.tween(0.0, 1.0, 0.6,
+        easing:Animation.Easing.sine_in_out)
+        ..ping_pong()
+        ..loop()
+    )
+    ..add_system(Application.Schedule.update, update_drawing)
+```
+
+`advance` does not rebuild the tween or access any ECS entity. It reuses the
+current value and a cursor over the configured steps.
+
+The same type covers a composed animation. `to` adds an interpolation and
+`wait` holds the latest value:
+
+```sx
+var opacity:Animation.Tween<float> = Animation.tween(0.0)
+    ..to(1.0, 0.4, easing:Animation.Easing.out)
+    ..wait(0.2)
+    ..to(0.25, 0.6, easing:Animation.Easing.in_out)
+```
+
+`value` reads the current value without advancing it. `seek` positions the
+tween, `restart` returns it to the beginning, and `finished` reports whether a
+non-looping tween reached its end. `ping_pong` plays the steps in both
+directions and `loop` repeats the cycle.
+
+The `float` type, 2D and 3D vectors, 4D vectors, colors, and quaternions have
+built-in interpolation. For another type `T`, construct
+`Animation.Tween<T>(initial, interpolate)` with a `func(T, T, float) T`
+function; `Tween<T>` therefore remains independent from property reflection.
 
 ## Build a timeline
 

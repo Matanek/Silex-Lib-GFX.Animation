@@ -2,6 +2,6 @@
   "sources": "Tests",
   "dependencies": {
     "GFX": "^0.37.0",
-    "GFX.Animation": "^0.2.0"
+    "GFX.Animation": "^0.3.0"
   }
 }

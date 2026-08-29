@@ -2,8 +2,8 @@
   "name": "GFX.Animation",
   "version": "0.3.1",
   "description": {
-    "en": "Reusable timelines and ECS playback for 2D and 3D animation.",
-    "fr": "Séquences temporelles réutilisables et lecture ECS pour les animations 2D et 3D."
+    "en": "Manual value tweens and reusable ECS timelines for 2D and 3D animation.",
+    "fr": "Tweens de valeurs manuels et timelines ECS réutilisables pour les animations 2D et 3D."
   },
   "authors": ["Matanek"],
   "requires": { "silex": ">=0.43.0" },

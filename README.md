@@ -1,7 +1,7 @@
 # GFX.Animation
 
-`GFX.Animation` composes reusable 2D and 3D timelines and plays them on ECS
-entities through GFX applications.
+`GFX.Animation` animates values manually with `Tween<T>` and composes reusable
+2D and 3D timelines played on ECS entities through GFX applications.
 
 ```text
 silex install GFX.Animation
