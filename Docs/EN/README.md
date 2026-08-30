@@ -103,10 +103,10 @@ to the final timeline.
 color, and Scene3D transforms. The first observed component value becomes the
 channel's starting value.
 
-In an application hosted by `Plugins.SceneManager`, keep
-`Plugins.Animation()` on the Application for the time resource and add
-`Plugins.AnimationContent()` to the scene. The same ordinary systems then
-target components in its local `World`; no animated-object protocol is
+In an application hosted by `Plugins.BundleManager`, keep
+`Plugins.Animation()` on the Application for the time resource. The same Plugin
+automatically extends every Bundle, and its ordinary systems target components
+in each local `World`; no animated-object protocol or `Content` Plugin is
 required.
 
 ```sx
@@ -114,21 +114,17 @@ use GFX.Plugins
 
 application
     ..add_plugin(Plugins.Animation())
-    ..add_plugin(Plugins.SceneManager(scene))
-
-scene.add_plugin(Plugins.AnimationContent())
+    ..add_plugin(Plugins.BundleManager(bundle))
 ```
 
-`Plugins.AnimationContent()` requires `Plugins.Animation()` to be resolved on the
-Application; an incomplete scene is rejected before mounting.
+A self-contained Bundle may install `Plugins.Animation()` directly.
 
 `loop` repeats the timeline. `ping_pong` alternates forward and reverse
 directions and can be combined with `loop`. `Easing.constant` holds the source
 value until the clip boundary, including in reverse playback.
 
-The package contributes `Plugins.Animation` and `Plugins.AnimationContent`
-directly to the `GFX.Plugins` catalog, so catalog completion exposes both
-levels. It keeps clip storage private and deliberately targets GFX transforms
+The package contributes `Plugins.Animation` directly to the `GFX.Plugins`
+catalog. It keeps clip storage private and deliberately targets GFX transforms
 and colors instead of exposing a generic property-reflection system.
 
 ## See the demonstrations

@@ -105,32 +105,28 @@ de `FrameTime` et applique ses canaux aux transformations Scene2D, à la couleur
 du Canvas Scene2D et aux transformations Scene3D. La première valeur observée
 sur le composant devient la valeur initiale du canal.
 
-Dans une application hébergée par `Plugins.SceneManager`, gardez
-`Plugins.Animation()` sur l’Application pour la ressource temporelle et ajoutez
-`Plugins.AnimationContent()` à la scène. Les mêmes systèmes ordinaires ciblent
-alors les composants de son `World` local ; aucun protocole d’objet animé n’est
-nécessaire.
+Dans une application hébergée par `Plugins.BundleManager`, gardez
+`Plugins.Animation()` sur l’Application pour la ressource temporelle. Le même
+Plugin étend automatiquement chaque Bundle et ses systèmes ordinaires ciblent
+les composants du `World` local ; aucun protocole d’objet animé ni Plugin
+`Content` n’est nécessaire.
 
 ```sx
 use GFX.Plugins
 
 application
     ..add_plugin(Plugins.Animation())
-    ..add_plugin(Plugins.SceneManager(scene))
-
-scene.add_plugin(Plugins.AnimationContent())
+    ..add_plugin(Plugins.BundleManager(bundle))
 ```
 
-`Plugins.AnimationContent()` exige que `Plugins.Animation()` soit résolu sur
-l’Application ; une scène incomplète est refusée avant son montage.
+Un Bundle autonome peut installer `Plugins.Animation()` directement.
 
 `loop` répète la timeline. `ping_pong` alterne les directions avant et arrière
 et peut se combiner avec `loop`. `Easing.constant` maintient la valeur initiale
 jusqu’à la frontière du clip, y compris en lecture inverse.
 
-Le package contribue `Plugins.Animation` et `Plugins.AnimationContent`
-directement au catalogue `GFX.Plugins`. L’auto-complétion du catalogue expose
-donc les deux niveaux. Le package garde son stockage de clips privé et cible
+Le package contribue `Plugins.Animation` directement au catalogue
+`GFX.Plugins`. Le package garde son stockage de clips privé et cible
 volontairement les transformations et couleurs de GFX plutôt qu’un système
 générique de réflexion sur les propriétés.
 

@@ -1,7 +1,6 @@
 use GFX.Animation.Playback.Playback
 use GFX.Application
 use GFX.Application.Plugin as PluginProtocol
-use GFX.Application.ScenePlugin as ScenePluginProtocol
 use GFX.Application.Schedule
 use GFX.Application.Time as TimePlugin
 use GFX.ECS
@@ -15,25 +14,18 @@ public struct Plugin:PluginProtocol {
 
     func build(host:&Application) {
         host.add_plugin(ECS.Plugin())
+        if host.inherits_plugin(self.id()) {
+            self.add_content_systems(host)
+            return
+        }
+        host.extend_bundles(self)
         host.add_plugin(TimePlugin())
-        if !host.has_plugin("GFX.Application.SceneManager") {
+        if !host.has_plugin("GFX.Application.BundleManager") {
             self.add_content_systems(host)
         }
     }
 
     private func add_content_systems(host:&Application) {
-        host.add_after_system(Schedule.pre_update, advance_playback)
-        host.add_system(Schedule.update, apply_transform_2d)
-        host.add_system(Schedule.update, apply_transform_3d)
-        host.add_system(Schedule.update, apply_canvas_color)
-    }
-}
-
-public struct Content:ScenePluginProtocol {
-    func id() str { return "GFX.Animation.Content" }
-
-    func build(host:&Application.Scene) {
-        host.require_application_plugin("GFX.Animation.Plugin")
         host.add_after_system(Schedule.pre_update, advance_playback)
         host.add_system(Schedule.update, apply_transform_2d)
         host.add_system(Schedule.update, apply_transform_3d)
