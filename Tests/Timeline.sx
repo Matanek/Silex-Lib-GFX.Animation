@@ -405,7 +405,7 @@ test "animate components stored in an Application scene" {
 
     application
         ..add_plugin(Animation.Plugin())
-        ..add_plugin(Application.Scenes(scene))
+        ..add_plugin(Application.SceneManager(scene))
 
     assert(application.run() == 0)
     assert(state.observed)

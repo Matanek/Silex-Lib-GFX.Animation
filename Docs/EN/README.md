@@ -98,34 +98,38 @@ to the final timeline.
 
 ## Play a timeline in the ECS
 
-`play` creates an ECS `Playback` component. `Animation.Plugin` advances it from
+`play` creates an ECS `Playback` component. `Plugins.Animation` advances it from
 `FrameTime` and applies its channels to Scene2D transforms, Scene2D Canvas
 color, and Scene3D transforms. The first observed component value becomes the
 channel's starting value.
 
-In an application hosted by `Application.Scenes`, keep `Animation.Plugin()` on
-the Application for the time resource and add `Animation.Content()` to the
-scene. The same ordinary systems then target components in its local `World`;
-no animated-object protocol is required.
+In an application hosted by `Plugins.SceneManager`, keep
+`Plugins.Animation()` on the Application for the time resource and add
+`Plugins.AnimationContent()` to the scene. The same ordinary systems then
+target components in its local `World`; no animated-object protocol is
+required.
 
 ```sx
-application
-    ..add_plugin(Animation.Plugin())
-    ..add_plugin(Application.Scenes(scene))
+use GFX.Plugins
 
-scene.add_plugin(Animation.Content())
+application
+    ..add_plugin(Plugins.Animation())
+    ..add_plugin(Plugins.SceneManager(scene))
+
+scene.add_plugin(Plugins.AnimationContent())
 ```
 
-`Animation.Content()` requires `Animation.Plugin()` to be resolved on the
+`Plugins.AnimationContent()` requires `Plugins.Animation()` to be resolved on the
 Application; an incomplete scene is rejected before mounting.
 
 `loop` repeats the timeline. `ping_pong` alternates forward and reverse
 directions and can be combined with `loop`. `Easing.constant` holds the source
 value until the clip boundary, including in reverse playback.
 
-The package contributes `Plugins.Animation` to the `GFX.Plugins` catalog. It
-keeps clip storage private and deliberately targets GFX transforms and colors
-instead of exposing a generic property-reflection system.
+The package contributes `Plugins.Animation` and `Plugins.AnimationContent`
+directly to the `GFX.Plugins` catalog, so catalog completion exposes both
+levels. It keeps clip storage private and deliberately targets GFX transforms
+and colors instead of exposing a generic property-reflection system.
 
 ## See the demonstrations
 

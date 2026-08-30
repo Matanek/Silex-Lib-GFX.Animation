@@ -206,4 +206,5 @@ func interpolate_quaternion(start:Math.Quat, end:Math.Quat, amount:float) Math.Q
 
 contribute GFX.Plugins {
     public use GFX.Animation.Plugin as Animation
+    public use GFX.Animation.Plugin.Content as AnimationContent
 }

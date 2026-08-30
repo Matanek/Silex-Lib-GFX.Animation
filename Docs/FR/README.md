@@ -100,35 +100,39 @@ les options de lecture appartiennent à la timeline finale.
 
 ## Lire une timeline dans l’ECS
 
-`play` crée un composant ECS `Playback`. `Animation.Plugin` l’avance à partir
+`play` crée un composant ECS `Playback`. `Plugins.Animation` l’avance à partir
 de `FrameTime` et applique ses canaux aux transformations Scene2D, à la couleur
 du Canvas Scene2D et aux transformations Scene3D. La première valeur observée
 sur le composant devient la valeur initiale du canal.
 
-Dans une application hébergée par `Application.Scenes`, gardez
-`Animation.Plugin()` sur l’Application pour la ressource temporelle et ajoutez
-`Animation.Content()` à la scène. Les mêmes systèmes ordinaires ciblent alors
-les composants de son `World` local ; aucun protocole d’objet animé n’est
+Dans une application hébergée par `Plugins.SceneManager`, gardez
+`Plugins.Animation()` sur l’Application pour la ressource temporelle et ajoutez
+`Plugins.AnimationContent()` à la scène. Les mêmes systèmes ordinaires ciblent
+alors les composants de son `World` local ; aucun protocole d’objet animé n’est
 nécessaire.
 
 ```sx
-application
-    ..add_plugin(Animation.Plugin())
-    ..add_plugin(Application.Scenes(scene))
+use GFX.Plugins
 
-scene.add_plugin(Animation.Content())
+application
+    ..add_plugin(Plugins.Animation())
+    ..add_plugin(Plugins.SceneManager(scene))
+
+scene.add_plugin(Plugins.AnimationContent())
 ```
 
-`Animation.Content()` exige que `Animation.Plugin()` soit résolu sur
+`Plugins.AnimationContent()` exige que `Plugins.Animation()` soit résolu sur
 l’Application ; une scène incomplète est refusée avant son montage.
 
 `loop` répète la timeline. `ping_pong` alterne les directions avant et arrière
 et peut se combiner avec `loop`. `Easing.constant` maintient la valeur initiale
 jusqu’à la frontière du clip, y compris en lecture inverse.
 
-Le package contribue `Plugins.Animation` au catalogue `GFX.Plugins`. Il garde
-son stockage de clips privé et cible volontairement les transformations et
-couleurs de GFX plutôt qu’un système générique de réflexion sur les propriétés.
+Le package contribue `Plugins.Animation` et `Plugins.AnimationContent`
+directement au catalogue `GFX.Plugins`. L’auto-complétion du catalogue expose
+donc les deux niveaux. Le package garde son stockage de clips privé et cible
+volontairement les transformations et couleurs de GFX plutôt qu’un système
+générique de réflexion sur les propriétés.
 
 ## Voir les démonstrations
 

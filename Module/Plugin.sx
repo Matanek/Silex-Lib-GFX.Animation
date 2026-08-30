@@ -16,7 +16,7 @@ public struct Plugin:PluginProtocol {
     func build(host:&Application) {
         host.add_plugin(ECS.Plugin())
         host.add_plugin(TimePlugin())
-        if !host.has_plugin("GFX.Application.Scenes") {
+        if !host.has_plugin("GFX.Application.SceneManager") {
             self.add_content_systems(host)
         }
     }
