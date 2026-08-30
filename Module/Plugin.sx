@@ -1,8 +1,9 @@
 use GFX.Animation.Playback.Playback
 use GFX.Application
 use GFX.Application.Plugin as PluginProtocol
+use GFX.Application.ScenePlugin as ScenePluginProtocol
 use GFX.Application.Schedule
-use GFX.Application.Time
+use GFX.Application.Time as TimePlugin
 use GFX.ECS
 use GFX.Resources
 use GFX.Scene2D.Canvas as Canvas2D
@@ -12,13 +13,31 @@ use GFX.Scene3D.Transform as Transform3D
 public struct Plugin:PluginProtocol {
     func id() str { return "GFX.Animation.Plugin" }
 
-    func build(application:&Application) {
-        application.add_plugin(ECS.Plugin())
-        application.add_plugin(Time())
-        application.add_after_system(Schedule.pre_update, advance_playback)
-        application.add_system(Schedule.update, apply_transform_2d)
-        application.add_system(Schedule.update, apply_transform_3d)
-        application.add_system(Schedule.update, apply_canvas_color)
+    func build(host:&Application) {
+        host.add_plugin(ECS.Plugin())
+        host.add_plugin(TimePlugin())
+        if !host.has_plugin("GFX.Application.Scenes") {
+            self.add_content_systems(host)
+        }
+    }
+
+    private func add_content_systems(host:&Application) {
+        host.add_after_system(Schedule.pre_update, advance_playback)
+        host.add_system(Schedule.update, apply_transform_2d)
+        host.add_system(Schedule.update, apply_transform_3d)
+        host.add_system(Schedule.update, apply_canvas_color)
+    }
+}
+
+public struct Content:ScenePluginProtocol {
+    func id() str { return "GFX.Animation.Content" }
+
+    func build(host:&Application.Scene) {
+        host.require_application_plugin("GFX.Animation.Plugin")
+        host.add_after_system(Schedule.pre_update, advance_playback)
+        host.add_system(Schedule.update, apply_transform_2d)
+        host.add_system(Schedule.update, apply_transform_3d)
+        host.add_system(Schedule.update, apply_canvas_color)
     }
 }
 

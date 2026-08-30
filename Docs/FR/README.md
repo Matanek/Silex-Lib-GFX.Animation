@@ -105,6 +105,23 @@ de `FrameTime` et applique ses canaux aux transformations Scene2D, à la couleur
 du Canvas Scene2D et aux transformations Scene3D. La première valeur observée
 sur le composant devient la valeur initiale du canal.
 
+Dans une application hébergée par `Application.Scenes`, gardez
+`Animation.Plugin()` sur l’Application pour la ressource temporelle et ajoutez
+`Animation.Content()` à la scène. Les mêmes systèmes ordinaires ciblent alors
+les composants de son `World` local ; aucun protocole d’objet animé n’est
+nécessaire.
+
+```sx
+application
+    ..add_plugin(Animation.Plugin())
+    ..add_plugin(Application.Scenes(scene))
+
+scene.add_plugin(Animation.Content())
+```
+
+`Animation.Content()` exige que `Animation.Plugin()` soit résolu sur
+l’Application ; une scène incomplète est refusée avant son montage.
+
 `loop` répète la timeline. `ping_pong` alterne les directions avant et arrière
 et peut se combiner avec `loop`. `Easing.constant` maintient la valeur initiale
 jusqu’à la frontière du clip, y compris en lecture inverse.

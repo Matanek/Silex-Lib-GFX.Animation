@@ -3,6 +3,7 @@ use STD.Math
 
 public use GFX.Animation.Easing.Easing
 public use GFX.Animation.Playback.Playback
+public use GFX.Animation.Plugin.Content
 public use GFX.Animation.Plugin.Plugin
 public use GFX.Animation.Timeline.Timeline
 public use GFX.Animation.Tween.Tween

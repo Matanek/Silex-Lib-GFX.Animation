@@ -45,6 +45,14 @@ struct AnimatedValue {
     let amount:float
 }
 
+class SceneIntegrationState {
+    var observed:bool
+
+    init() {
+        self.observed = false
+    }
+}
+
 func interpolate_animated_value(
     start:AnimatedValue,
     end:AnimatedValue,
@@ -109,6 +117,30 @@ func verify_animation(
 
 func force_half_second(time:&Resources.FrameTime) {
     time.delta = 0.5
+}
+
+func create_scene_animation(world:&ECS.World) {
+    let timeline = Animation.move_to(Math.Vec2(10.0, 0.0), 1.0)
+    world.spawn(ECS.EntityRecipe()
+        ..with(Transform2D())
+        ..with(timeline.play())
+    )
+}
+
+func verify_scene_animation(
+    query:ECS.Query<(ECS.Entity, @Transform2D)>,
+    state:&SceneIntegrationState,
+    controller:&Application.Controller
+) {
+    var count = 0
+    for (entity, transform) in query {
+        assert(entity.is_valid())
+        assert(Math.nearly_equal(transform.position.x, 5.0))
+        count++
+    }
+    assert(count == 1)
+    state.observed = true
+    controller.stop()
 }
 
 func create_animated_3d_entity(
@@ -359,4 +391,22 @@ test "hold both blocking poses for one complete ping-pong direction" {
         ..add_after_system(Application.Schedule.update, verify_blocking)
 
     assert(application.run() == 0)
+}
+
+test "animate components stored in an Application scene" {
+    var application = Application()
+    var state = SceneIntegrationState()
+    var scene = Application.Scene(application)
+        ..add_resource(state)
+        ..add_system(Application.Schedule.startup, create_scene_animation)
+        ..add_system(Application.Schedule.pre_update, force_half_second)
+        ..add_plugin(Animation.Content())
+        ..add_after_system(Application.Schedule.update, verify_scene_animation)
+
+    application
+        ..add_plugin(Animation.Plugin())
+        ..add_plugin(Application.Scenes(scene))
+
+    assert(application.run() == 0)
+    assert(state.observed)
 }

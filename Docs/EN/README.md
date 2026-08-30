@@ -103,6 +103,22 @@ to the final timeline.
 color, and Scene3D transforms. The first observed component value becomes the
 channel's starting value.
 
+In an application hosted by `Application.Scenes`, keep `Animation.Plugin()` on
+the Application for the time resource and add `Animation.Content()` to the
+scene. The same ordinary systems then target components in its local `World`;
+no animated-object protocol is required.
+
+```sx
+application
+    ..add_plugin(Animation.Plugin())
+    ..add_plugin(Application.Scenes(scene))
+
+scene.add_plugin(Animation.Content())
+```
+
+`Animation.Content()` requires `Animation.Plugin()` to be resolved on the
+Application; an incomplete scene is rejected before mounting.
+
 `loop` repeats the timeline. `ping_pong` alternates forward and reverse
 directions and can be combined with `loop`. `Easing.constant` holds the source
 value until the clip boundary, including in reverse playback.
