@@ -409,3 +409,19 @@ test "animate components stored in an Application Bundle" {
     assert(application.run() == 0)
     assert(state.observed)
 }
+
+test "install Animation directly inside an Application Bundle" {
+    var application = Application()
+    var state = SceneIntegrationState()
+    var bundle = Application.Bundle(application)
+        ..add_resource(state)
+        ..add_plugin(Animation.Plugin())
+        ..add_system(Application.Schedule.startup, create_scene_animation)
+        ..add_system(Application.Schedule.pre_update, force_half_second)
+        ..add_after_system(Application.Schedule.update, verify_scene_animation)
+
+    application.add_plugin(Application.BundleManager(bundle))
+
+    assert(application.run() == 0)
+    assert(state.observed)
+}
