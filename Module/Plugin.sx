@@ -14,12 +14,12 @@ public struct Plugin:PluginProtocol {
 
     func build(host:&Application) {
         host.add_plugin(ECS.Plugin())
+        host.add_plugin(TimePlugin())
         if host.inherits_plugin(self.id()) {
             self.add_content_systems(host)
             return
         }
         host.extend_bundles(self)
-        host.add_plugin(TimePlugin())
         if !host.has_plugin("GFX.Application.BundleManager") ||
             host.inherits_plugin("GFX.Application.BundleManager")
         {
@@ -28,24 +28,29 @@ public struct Plugin:PluginProtocol {
     }
 
     private func add_content_systems(host:&Application) {
-        host.add_after_system(Schedule.pre_update, advance_playback)
-        host.add_system(Schedule.update, apply_transform_2d)
-        host.add_system(Schedule.update, apply_transform_3d)
-        host.add_system(Schedule.update, apply_canvas_color)
+        host.add_after_system(Schedule.pre_update, advance_playback, process_mode:Application.ProcessMode.always)
+        host.add_system(Schedule.update, apply_transform_2d, process_mode:Application.ProcessMode.always)
+        host.add_system(Schedule.update, apply_transform_3d, process_mode:Application.ProcessMode.always)
+        host.add_system(Schedule.update, apply_canvas_color, process_mode:Application.ProcessMode.always)
     }
 }
 
 func advance_playback(
     time:@Resources.FrameTime,
+    simulation:@Application.Simulation,
     query:ECS.Query<(ECS.Entity, &Playback)>
 ) {
+    let paused = simulation.is_paused()
     for (entity, playback) in query {
+        if !Application.should_process(playback.process_mode, paused) { continue }
         playback.advance(time.delta)
     }
 }
 
-func apply_transform_2d(query:ECS.Query<(&Playback, &Transform2D)>) {
+func apply_transform_2d(simulation:@Application.Simulation, query:ECS.Query<(&Playback, &Transform2D)>) {
+    let paused = simulation.is_paused()
     for (playback, transform) in query {
+        if !Application.should_process(playback.process_mode, paused) { continue }
         if let position = playback.position(transform.position) {
             transform.position = position
         }
@@ -58,8 +63,10 @@ func apply_transform_2d(query:ECS.Query<(&Playback, &Transform2D)>) {
     }
 }
 
-func apply_transform_3d(query:ECS.Query<(&Playback, &Transform3D)>) {
+func apply_transform_3d(simulation:@Application.Simulation, query:ECS.Query<(&Playback, &Transform3D)>) {
+    let paused = simulation.is_paused()
     for (playback, transform) in query {
+        if !Application.should_process(playback.process_mode, paused) { continue }
         if let position = playback.position_3d(transform.position) {
             transform.position = position
         }
@@ -72,8 +79,10 @@ func apply_transform_3d(query:ECS.Query<(&Playback, &Transform3D)>) {
     }
 }
 
-func apply_canvas_color(query:ECS.Query<(&Playback, &Canvas2D)>) {
+func apply_canvas_color(simulation:@Application.Simulation, query:ECS.Query<(&Playback, &Canvas2D)>) {
+    let paused = simulation.is_paused()
     for (playback, canvas) in query {
+        if !Application.should_process(playback.process_mode, paused) { continue }
         if let color = playback.color(canvas.color) { canvas.color = color }
     }
 }

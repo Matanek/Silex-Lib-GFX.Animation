@@ -1,0 +1,75 @@
+use GFX.Animation
+use GFX.Application
+use GFX.ECS
+use GFX.Scene2D
+use STD.Math
+
+func quarter_second(time:&Application.FrameTime) { time.delta = 0.25 }
+
+func tick(application:Application) {
+    application.run_schedule(Application.Schedule.pre_update)
+    application.run_schedule(Application.Schedule.update)
+}
+
+func set_pause(resources:Application.Resources, paused:bool) {
+    var store = resources
+    var simulation = store.get_mut<Application.Simulation>()
+    if paused { simulation.pause() } else { simulation.resume() }
+}
+
+func populate(resources:Application.Resources) ECS.Entity[] {
+    var store = resources
+    var world = store.get_mut<ECS.World>()
+    let timeline = Animation.move_to(Math.Vec2(10.0, 0.0), 1.0)
+    let game = world.spawn(ECS.EntityRecipe()
+        ..with(Scene2D.Transform())
+        ..with(timeline.play()))
+    let interface = world.spawn(ECS.EntityRecipe()
+        ..with(Scene2D.Transform())
+        ..with(timeline.play()..process_mode = Application.ProcessMode.always))
+    return [game, interface]
+}
+
+func positions(resources:Application.Resources, entities:ECS.Entity[], game:float, interface:float) {
+    let world = resources.get<ECS.World>()
+    assert(world.get<Animation.Playback>(entities[1]).process_mode == Application.ProcessMode.always)
+    assert(Math.nearly_equal(world.get<Scene2D.Transform>(entities[0]).position.x, game, 0.001))
+    assert(Math.nearly_equal(world.get<Scene2D.Transform>(entities[1]).position.x, interface, 0.001))
+}
+
+test "pause world animations while interface animations advance and resume without catch-up" {
+    var application = Application()..add_plugin(Animation.Plugin())
+    application.prepare()
+    application.add_system(Application.Schedule.pre_update, quarter_second, process_mode:Application.ProcessMode.always)
+    let entities = populate(application.resources())
+    tick(application)
+    positions(application.resources(), entities, 2.5, 2.5)
+    set_pause(application.resources(), true)
+    tick(application)
+    positions(application.resources(), entities, 2.5, 5.0)
+    tick(application)
+    positions(application.resources(), entities, 2.5, 7.5)
+    set_pause(application.resources(), false)
+    tick(application)
+    positions(application.resources(), entities, 5.0, 10.0)
+    application.run_schedule(Application.Schedule.shutdown)
+}
+
+test "inherited Animation plugin honors its Bundle simulation rather than the parent" {
+    var application = Application()..add_plugin(Animation.Plugin())
+    var bundle = Application.Bundle(application)
+        ..add_system(Application.Schedule.pre_update, quarter_second, process_mode:Application.ProcessMode.always)
+    application.add_plugin(Application.BundleManager(bundle))
+    application.run_schedule(Application.Schedule.startup)
+    let entities = populate(bundle.resources())
+    tick(application)
+    positions(bundle.resources(), entities, 2.5, 2.5)
+    set_pause(bundle.resources(), true)
+    assert(!application.resources().get<Application.Simulation>().is_paused())
+    tick(application)
+    positions(bundle.resources(), entities, 2.5, 5.0)
+    set_pause(bundle.resources(), false)
+    tick(application)
+    positions(bundle.resources(), entities, 5.0, 7.5)
+    application.run_schedule(Application.Schedule.shutdown)
+}

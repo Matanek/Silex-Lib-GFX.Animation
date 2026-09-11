@@ -1,8 +1,10 @@
+use GFX.Application
 use GFX.Animation.Timeline.Timeline
 use GFX.Color
 use STD.Math
 
 public struct Playback {
+    var process_mode:Application.ProcessMode = Application.ProcessMode.pausable
     private let timeline:Timeline
     private var elapsed:float
     private var initial_position:Math.Vec2?

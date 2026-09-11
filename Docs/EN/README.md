@@ -127,6 +127,32 @@ The package contributes `Plugins.Animation` directly to the `GFX.Plugins`
 catalog. It keeps clip storage private and deliberately targets GFX transforms
 and colors instead of exposing a generic property-reflection system.
 
+## Game pause and interface animations
+
+With the plugin, each `Playback` has an `Application.ProcessMode` property
+named `process_mode`, initially `pausable`. When the context's
+`Application.Simulation` resource is paused, playback advancement and channel
+application stop. The last pose remains visible. Resuming advances from that
+position with the current frame delta, without catching up the pause duration.
+
+To keep an interface animation running, set its mode before inserting the
+component into the ECS. Fragment, with `timeline` already constructed:
+
+```sx
+var playback = timeline.play()
+    ..process_mode = Application.ProcessMode.always
+```
+
+`when_paused` reserves playback for paused time; `disabled` prevents advancement
+and channel application. `inherit` is equivalent to `pausable` here: a Playback
+does not look up an associated Node's mode. Each Bundle follows its local
+simulation and receives its clock, even when the plugin extends from its parent.
+
+A manually advanced `Tween<T>` follows the system calling `advance`. The
+default system pauses; declaring it `always` and passing the `FrameTime` delta
+allows an interface animation. Manual `advance` or `seek` calls remain explicit
+and do not consult the application's pause state.
+
 ## See the demonstrations
 
 Visual applications belong to Silex-Examples:
